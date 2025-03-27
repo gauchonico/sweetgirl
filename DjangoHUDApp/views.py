@@ -5,7 +5,12 @@ from django.views import generic
 from django.http import HttpResponse
 
 def index(request):
-	return render(request, "pages/index.html")
+    context = {
+    "appContentFullWidth": 1,
+    "appSidebarHide": 1
+    
+	}
+    return render(request, "pages/index.html", context)
 
 def analytics(request):
 	return render(request, "pages/analytics.html")
