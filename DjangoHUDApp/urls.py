@@ -58,5 +58,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('calendar/', views.calendar, name='calendar'),
     path('settings/', views.settings, name='settings'),
-    path('helper/', views.helper, name='helper')
+    path('helper/', views.helper, name='helper'),
+    path('logout/', views.logout_view, name='logout'),
+    path('create-sale/', views.create_sale, name='create_sale'),
 ]

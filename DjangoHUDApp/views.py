@@ -1,8 +1,15 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
 from django.views import generic
 from django.http import HttpResponse
+from django.contrib.auth import logout, authenticate, login
+from django.contrib import messages
+from django.db.models import Sum, F, Q
+from django.views.decorators.http import require_POST
+import json
+
+from DjangoHUDApp.models import Customer, Product, Sale, SaleItem, Store
 
 def index(request):
     context = {
@@ -39,14 +46,74 @@ def emailCompose(request):
 def widgets(request):
 	return render(request, "pages/widgets.html")
 
+# create sale
 def posCustomerOrder(request):
-	context = {
-		"appSidebarHide": 1, 
-		"appHeaderHide": 1,  
-		"appContentFullHeight": 1,
-		"appContentClass": "p-1 ps-xl-4 pe-xl-4 pt-xl-3 pb-xl-3"
-	}
-	return render(request, "pages/pos-customer-order.html", context)
+    search_query = request.GET.get('search', '')
+    store_products = Product.objects.all()
+    customers = Customer.objects.all()
+    
+    # search query
+    if search_query:
+        store_products = store_products.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    context = {
+        "store_products": store_products,
+        "customers": customers,
+        "search_query": search_query,
+        'appSidebarHide': 1,
+        'appHeaderHide': 1,
+        'appContentFullHeight': 1,
+        'appContentClass': "p-1 ps-xl-4 pe-xl-4 pt-xl-3 pb-xl-3",
+    }
+    return render(request, "pages/pos-customer-order.html", context)
+
+@require_POST
+def create_sale(request):
+    try:
+        data = json.loads(request.body)
+        customer_id = data.get('customer_id')
+        location = data.get('location')
+        items = data.get('items', [])
+        payment_status = data.get('payment_status', 'pending')
+        notes = data.get('notes', '')
+
+        # Create sale
+        sale = Sale.objects.create(
+            customer_id=customer_id,
+            location=location,
+            payment_status=payment_status,
+            notes=notes
+        )
+
+        # Create sale items
+        for item in items:
+            product = Product.objects.get(id=item['product_id'])
+            SaleItem.objects.create(
+                sale=sale,
+                product=product,
+                quantity=item['quantity'],
+                unit_price=product.price,
+                discount=item.get('discount', 0)
+            )
+
+            # Update store quantity
+            store, created = Store.objects.get_or_create(product=product)
+            store.quantity -= item['quantity']
+            store.save()
+
+        return JsonResponse({
+            'status': 'success',
+            'sale_id': sale.id,
+            'message': 'Sale created successfully'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        }, status=400)
 
 def posKitchenOrder(request):
 	context = {
@@ -228,12 +295,26 @@ def pageError(request):
 	return render(request, "pages/page-error.html", context)
 
 def pageLogin(request):
-	context = {
-		"appSidebarHide": 1,
-		"appHeaderHide": 1,
-		"appContentClass": 'p-0'
-	}
-	return render(request, "pages/page-login.html", context)
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            login(request, user)
+            return redirect('DjangoHUDApp:analytics')
+        else:
+            messages.error(request, 'Invalid username or password.')
+    
+    context = {
+        "appSidebarHide": 1,
+        "appHeaderHide": 1,
+        "appContentClass": 'p-0',
+        "appContentFullWidth": 1,
+        "appSidebarHide": 1,
+        "appContentFullHeight": 1,
+    }
+    return render(request, "pages/page-login.html", context)
 
 def pageRegister(request):
 	context = {
@@ -293,3 +374,7 @@ def error404(request):
 
 def handler404(request, exception = None):
 	return redirect('/404/')
+
+def logout_view(request):
+    logout(request)
+    return redirect('DjangoHUDApp:pageLogin')

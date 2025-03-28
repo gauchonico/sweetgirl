@@ -66,3 +66,50 @@ class Customer(models.Model):
 
     def __str__(self):
         return f"{self.name or 'Unnamed'} ({self.phone_number})"
+
+class Sale(models.Model):
+    PAYMENT_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('paid', 'Paid'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    customer = models.ForeignKey(Customer, on_delete=models.SET_NULL, null=True, blank=True)
+    location = models.CharField(max_length=200, blank=True, null=True)
+    date = models.DateTimeField(auto_now_add=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS_CHOICES, default='pending')
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Sale #{self.id} - {self.date.strftime('%Y-%m-%d %H:%M')}"
+
+    def calculate_total(self):
+        total = sum(item.subtotal for item in self.saleitem_set.all())
+        self.total_amount = total
+        self.save()
+        return total
+
+class SaleItem(models.Model):
+    sale = models.ForeignKey(Sale, on_delete=models.CASCADE, related_name='saleitem_set')
+    product = models.ForeignKey(Product, on_delete=models.PROTECT)
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount = models.DecimalField(max_digits=10, decimal_places=2, default=0, validators=[MinValueValidator(0)])
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.product.name} x {self.quantity}"
+
+    def save(self, *args, **kwargs):
+        # Calculate subtotal before saving
+        self.subtotal = (self.unit_price * self.quantity) - self.discount
+        super().save(*args, **kwargs)
+        # Update sale total
+        self.sale.calculate_total()
+
+    class Meta:
+        ordering = ['-created_at']
