@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h1>Static Files Test</h1>
+    
+    <div class="card">
+        <div class="card-body">
+            <h2>Configuration</h2>
+            <ul>
+                <li><strong>STATIC_ROOT:</strong> {{ static_root }}</li>
+                <li><strong>STATIC_URL:</strong> {{ static_url }}</li>
+                <li><strong>STATICFILES_DIRS:</strong> {{ static_dirs }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2>Vendor CSS Status</h2>
+            <ul>
+                <li><strong>Exists in STATIC_ROOT:</strong> {{ vendor_css_exists }}</li>
+                <li><strong>Found at path:</strong> {{ vendor_css_path }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h2>Static Files in STATIC_ROOT</h2>
+            <ul>
+                {% for file in static_files %}
+                <li>{{ file }}</li>
+                {% empty %}
+                <li>No files found in STATIC_ROOT</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %} 

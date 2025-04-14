@@ -93,6 +93,16 @@ DATABASES = {
     )
 }
 
+# If no DATABASE_URL is set, use SQLite
+if not os.getenv('DATABASE_URL'):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+else:
+    # Ensure we're using PostgreSQL in production
+    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -135,7 +145,7 @@ STATICFILES_DIRS = [
 ]
 
 # WhiteNoise configuration
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 # Add this to handle duplicate static files
 STATICFILES_FINDERS = [
@@ -149,9 +159,10 @@ STATICFILES_IGNORE_PATTERNS = [
     '*.min.css.map',
 ]
 
-# Add this to ensure manifest is created
-WHITENOISE_MANIFEST_STRICT = False
+# WhiteNoise settings
 WHITENOISE_USE_FINDERS = True
+WHITENOISE_MANIFEST_STRICT = False
+WHITENOISE_ALLOW_ALL_ORIGINS = True
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field

@@ -61,4 +61,5 @@ urlpatterns = [
     path('helper/', views.helper, name='helper'),
     path('logout/', views.logout_view, name='logout'),
     path('create-sale/', views.create_sale, name='create_sale'),
+    path('test-static/', views.test_static, name='test_static'),
 ]

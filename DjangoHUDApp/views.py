@@ -8,6 +8,8 @@ from django.contrib import messages
 from django.db.models import Sum, F, Q
 from django.views.decorators.http import require_POST
 import json
+from django.db import connection
+from django.contrib.auth.decorators import login_required
 
 from DjangoHUDApp.models import Customer, Product, Sale, SaleItem, Store
 
@@ -378,3 +380,18 @@ def handler404(request, exception = None):
 def logout_view(request):
     logout(request)
     return redirect('DjangoHUDApp:pageLogin')
+
+def test_static(request):
+    from django.conf import settings
+    from django.contrib.staticfiles.finders import find
+    import os
+    
+    context = {
+        'static_root': settings.STATIC_ROOT,
+        'static_url': settings.STATIC_URL,
+        'static_dirs': settings.STATICFILES_DIRS,
+        'vendor_css_exists': os.path.exists(os.path.join(settings.STATIC_ROOT, 'css', 'vendor.min.css')),
+        'vendor_css_path': find('css/vendor.min.css'),
+        'static_files': os.listdir(settings.STATIC_ROOT) if os.path.exists(settings.STATIC_ROOT) else [],
+    }
+    return render(request, 'test_static.html', context)
