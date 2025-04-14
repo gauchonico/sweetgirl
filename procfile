@@ -1,3 +1,3 @@
-web: python manage.py collectstatic --noinput && python manage.py migrate && gunicorn DjangoHUD.wsgi:application
+web: python3 manage.py collectstatic --noinput && python3 manage.py migrate && gunicorn DjangoHUD.wsgi:application --log-file -
 #or works good with external database
 web: python manage.py migrate && gunicorn DdjangoHUDApp.wsgi
