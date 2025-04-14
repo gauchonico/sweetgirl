@@ -85,23 +85,21 @@ WSGI_APPLICATION = 'DjangoHUD.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# Default to SQLite for local development
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:///db.sqlite3',
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
-}
-
-# If no DATABASE_URL is set, use SQLite
-if not os.getenv('DATABASE_URL'):
-    DATABASES['default'] = {
+    'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    # Ensure we're using PostgreSQL in production
-    DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql'
+}
+
+# If DATABASE_URL is set (production), use PostgreSQL
+if os.getenv('DATABASE_URL'):
+    DATABASES['default'] = dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        conn_health_checks=True,
+    )
 
 
 # Password validation

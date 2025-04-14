@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Product Management</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="single-tab" data-bs-toggle="tab" href="#single" role="tab">
+                                Add Single Product
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="bulk-tab" data-bs-toggle="tab" href="#bulk" role="tab">
+                                Bulk Upload
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="productTabsContent">
+                        <!-- Single Product Form -->
+                        <div class="tab-pane fade show active" id="single" role="tabpanel">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="name" class="form-label">Product Name</label>
+                                            <input type="text" class="form-control" id="name" name="name" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="description" class="form-label">Description</label>
+                                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="price" class="form-label">Price</label>
+                                            <input type="number" class="form-control" id="price" name="price" step="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label">Category</label>
+                                            <input type="text" class="form-control" id="category" name="category">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="stock" class="form-label">Stock Quantity</label>
+                                            <input type="number" class="form-control" id="stock" name="stock" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="image" class="form-label">Product Image</label>
+                                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                                        </div>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Add Product</button>
+                            </form>
+                        </div>
+
+                        <!-- Bulk Upload Form -->
+                        <div class="tab-pane fade" id="bulk" role="tabpanel">
+                            <form method="post" enctype="multipart/form-data">
+                                {% csrf_token %}
+                                <div class="mb-3">
+                                    <label for="csv_file" class="form-label">Upload CSV File</label>
+                                    <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                                    <div class="form-text">
+                                        Download the <a href="{% url 'DjangoHUDApp:download_template' %}">template CSV file</a>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload Products</button>
+                            </form>
+                            
+                            <div class="mt-4">
+                                <h5>CSV Format Requirements:</h5>
+                                <ul>
+                                    <li>File must be in CSV format</li>
+                                    <li>Required columns: name, price, stock</li>
+                                    <li>Optional columns: description, category</li>
+                                    <li>First row should be headers</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

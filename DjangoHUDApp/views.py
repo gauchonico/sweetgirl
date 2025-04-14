@@ -10,6 +10,8 @@ from django.views.decorators.http import require_POST
 import json
 from django.db import connection
 from django.contrib.auth.decorators import login_required
+import csv
+from django.core.files.storage import default_storage
 
 from DjangoHUDApp.models import Customer, Product, Sale, SaleItem, Store
 
@@ -395,3 +397,111 @@ def test_static(request):
         'static_files': os.listdir(settings.STATIC_ROOT) if os.path.exists(settings.STATIC_ROOT) else [],
     }
     return render(request, 'test_static.html', context)
+
+@login_required
+def product_management(request):
+    if request.method == 'POST':
+        if 'csv_file' in request.FILES:
+            # Handle bulk upload
+            csv_file = request.FILES['csv_file']
+            if not csv_file.name.endswith('.csv'):
+                messages.error(request, 'Please upload a CSV file')
+                return redirect('DjangoHUDApp:product_management')
+            
+            try:
+                # Read the CSV file
+                csv_data = csv.reader(csv_file.read().decode('utf-8').splitlines())
+                headers = next(csv_data)
+                
+                # Process each row
+                for row in csv_data:
+                    if len(row) >= 3:  # At least name, price, and stock
+                        Product.objects.create(
+                            name=row[0],
+                            price=float(row[1]),
+                            stock=int(row[2]),
+                            description=row[3] if len(row) > 3 else '',
+                            category=row[4] if len(row) > 4 else ''
+                        )
+                
+                messages.success(request, 'Products uploaded successfully!')
+            except Exception as e:
+                messages.error(request, f'Error processing CSV file: {str(e)}')
+        else:
+            # Handle single product
+            try:
+                product = Product.objects.create(
+                    name=request.POST.get('name'),
+                    description=request.POST.get('description'),
+                    price=float(request.POST.get('price')),
+                    stock=int(request.POST.get('stock')),
+                    category=request.POST.get('category')
+                )
+                
+                if 'image' in request.FILES:
+                    image = request.FILES['image']
+                    product.image.save(image.name, image, save=True)
+                
+                messages.success(request, 'Product added successfully!')
+            except Exception as e:
+                messages.error(request, f'Error adding product: {str(e)}')
+        
+        return redirect('DjangoHUDApp:product_management')
+    
+    return render(request, 'product_management.html')
+
+@login_required
+def download_template(request):
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="product_template.csv"'
+    
+    writer = csv.writer(response)
+    writer.writerow(['name', 'price', 'stock', 'description', 'category'])
+    writer.writerow(['Example Product', '99.99', '100', 'Product description', 'Category'])
+    
+    return response
+
+@login_required
+def product_list(request):
+    products = Product.objects.all().order_by('name')
+    context = {
+        'products': products,
+        'title': 'Product List'
+    }
+    return render(request, 'product_list.html', context)
+
+@login_required
+def product_details(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    context = {
+        'product': product,
+        'title': f'Product Details - {product.name}'
+    }
+    return render(request, 'product_details.html', context)
+
+@login_required
+def update_stock(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    
+    if request.method == 'POST':
+        try:
+            stock_change = int(request.POST.get('stock_change', 0))
+            operation = request.POST.get('operation', 'add')
+            notes = request.POST.get('notes', '')
+            
+            if operation == 'add':
+                product.stock += stock_change
+            else:
+                product.stock = max(0, product.stock - stock_change)
+            
+            product.save()
+            messages.success(request, f'Stock updated successfully! New stock: {product.stock}')
+            return redirect('DjangoHUDApp:product_details', product_id=product.id)
+        except Exception as e:
+            messages.error(request, f'Error updating stock: {str(e)}')
+    
+    context = {
+        'product': product,
+        'title': f'Update Stock - {product.name}'
+    }
+    return render(request, 'update_stock.html', context)
