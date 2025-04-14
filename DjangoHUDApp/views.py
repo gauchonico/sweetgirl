@@ -18,7 +18,6 @@ from DjangoHUDApp.models import Customer, Product, Sale, SaleItem, Store
 def index(request):
     context = {
     "appContentFullWidth": 1,
-    "appSidebarHide": 1
     
 	}
     return render(request, "pages/index.html", context)
