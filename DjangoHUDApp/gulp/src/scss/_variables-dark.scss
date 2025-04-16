@@ -35,7 +35,7 @@ $orange-dark:       #ff9f0c !default;
 $aqua-dark:         #0cfff5 !default;
 $blue-dark:         #4e9cff !default;
 $indigo-dark:       #bba4ff !default;
-$purple-dark:       #de8cff !default;
+$purple-dark:       #9808d1 !default;
 $red-dark:          #ff6060 !default;
 $teal-dark:         #3cd2a5 !default;
 $green-dark:        #1ecc33 !default;
@@ -54,7 +54,7 @@ $info-dark:         $cyan-dark !default;
 $secondary-dark:    $gray-400 !default;
 $text-muted-dark:   $gray-400 !default;
 $inverse-dark:      $white !default;
-$theme-dark:        $teal-dark !default;
+$theme-dark:        $purple-dark !default;
 $theme-colors-dark: (
 	"default":   $default-dark,
 	"theme":     $theme-dark,
@@ -122,8 +122,8 @@ $dark-border-subtle-dark:                       $gray-800 !default;
 
 $body-font-weight-dark:                         300 !default;
 $body-letter-spacing-dark:                      rem(.75px) !default;
-$body-bg-dark:                                  #1d2835 !default;
-$body-bg-gradient-dark:                         linear-gradient(180deg, rgba(24, 24, 27, 0.9) 0%, rgb(39, 39, 42, 0.9) 100%) !default;
+$body-bg-dark:                                  #351d32 !default;
+$body-bg-gradient-dark:                         linear-gradient(180deg, rgba(24, 24, 19, 0.9) 0%, rgb(22, 8, 40, 0.9) 100%) !default;
 $body-bg-cover-dark:                            url('images/gallery-32.jpg') !default;
 $body-bg-image-dark:                            url('') !default;
 $body-bg-image-size-dark:                       rem(75px) !default;

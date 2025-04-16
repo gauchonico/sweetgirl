@@ -30,7 +30,7 @@
                     <h3 class="card-title">Product List</h3>
                     {% if user.is_authenticated and user.is_staff %}
                     <div class="card-tools">
-                        <a href="{% url 'DjangoHUDApp:product_management' %}" class="btn btn-primary">
+                        <a href="{% url 'DjangoHUDApp:product_management' %}" class="btn btn-theme">
                             <i class="fas fa-plus"></i> Add Product
                         </a>
                     </div>
@@ -64,7 +64,7 @@
                                     <td>{{ product.price|floatformat|intcomma }}</td>
                                     <td>
                                         {% if product.has_variants %}
-                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#variantsModal{{ product.id }}">
+                                            <button type="button" class="btn btn-theme btn-sm" data-bs-toggle="modal" data-bs-target="#variantsModal{{ product.id }}">
                                                 View Variants
                                             </button>
                                         {% else %}

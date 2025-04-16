@@ -541,3 +541,36 @@ def product_delete(request, product_id):
         messages.success(request, f'Product "{product_name}" deleted successfully!')
         return redirect('DjangoHUDApp:product_list')
     return render(request, 'product_confirm_delete.html', {'product': product})
+
+@login_required
+def store_view(request):
+    # Get search query from request
+    search_query = request.GET.get('search', '')
+    category_filter = request.GET.get('category', '')
+    
+    # Start with all products
+    products = Product.objects.all()
+    
+    # Apply search filter if exists
+    if search_query:
+        products = products.filter(
+            Q(name__icontains=search_query) |
+            Q(description__icontains=search_query)
+        )
+    
+    # Apply category filter if exists
+    if category_filter:
+        products = products.filter(category__id=category_filter)
+    
+    # Get all categories for the filter dropdown
+    categories = Category.objects.all()
+    
+    context = {
+        'products': products,
+        'categories': categories,
+        'search_query': search_query,
+        'selected_category': category_filter,
+        'appContentClass': 'p-3'
+    }
+    
+    return render(request, 'pages/store.html', context)

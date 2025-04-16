@@ -32,10 +32,10 @@ def sidebar_menu(request):
 		'text': 'Components',
 		'is_header': 1
 	}, {
-		'url': '/widgets',
+		'url': '/store',
 		'icon': 'bi bi-columns-gap',
-		'text': 'Widgets',
-		'name': 'widgets'
+		'text': 'Store',
+		'name': 'store_view'
 	}, {
 		'icon': 'bi bi-bag-check',
 		'text': 'Products Management',

@@ -78,18 +78,18 @@ $orange:       #ff9f0c !default;
 $aqua:         #0cfff5 !default;
 $blue:         #0271ff !default;
 $indigo:       #5c25ff !default;
-$purple:       #b90dff !default;
+$purple:       #9808d1 !default;
 $red:          #e00000 !default;
 $teal:         #249d79 !default;
 $green:        #148922 !default;
 $lime:         #50b00a !default;
 $pink:         #e61079 !default;
 $cyan:         #009be3 !default;
-$default:      $gray-400 !default;
+$default:      $gray-800 !default;
 $dark:         $gray-800 !default;
 $black:        #000000 !default;
 $light:        $gray-100 !default;
-$primary:      $blue !default;
+$primary:      $purple !default;
 $warning:      $orange !default;
 $danger:       $red !default;
 $success:      $teal !default;
@@ -97,7 +97,7 @@ $info:         $cyan !default;
 $secondary:    $gray-400 !default;
 $text-muted:   $gray-400 !default;
 $inverse:      $black !default;
-$theme:        $teal !default;
+$theme:        $purple !default;
 $theme-color:  $white !default;
 $theme-colors: (
 	"default":     $default,
@@ -333,7 +333,7 @@ $spacers: (
 
 // 06. Font & headings settings
 
-$font-family-base:                              'Chakra Petch', sans-serif !default;
+$font-family-base:                              'Poppins', sans-serif !default;
 $font-size-base:                                .875rem !default;
 $font-size-sm:                                  .8125rem !default;
 $font-size-lg:                                 	1rem !default;

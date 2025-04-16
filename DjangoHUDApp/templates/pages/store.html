@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Search and Filter Section -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <form method="GET" class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" 
+                               class="form-control" 
+                               name="search" 
+                               value="{{ search_query }}"
+                               placeholder="Search products...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                        <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-theme w-100">Filter</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row g-4">
+        {% for product in products %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <div class="card h-100 border-0 bg-theme bg-opacity-5 shadow-sm">
+                <div class="card-body">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" 
+                         class="card-img-top mb-3" 
+                         alt="{{ product.name }}"
+                         style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-light text-center py-4 mb-3">
+                        <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text text-muted">{{ product.description|truncatechars:100 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="h5 mb-0">${{ product.price|floatformat:2 }}</span>
+                        {% if product.has_variants %}
+                        <button class="btn btn-sm btn-outline-theme" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#variantsModal{{ product.id }}">
+                            View Variants
+                        </button>
+                        {% else %}
+                        <div class="text-end">
+                            {% if product.get_total_stock > 0 %}
+                            <span class="badge bg-success">In Stock ({{ product.get_total_stock }})</span>
+                            {% else %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if product.has_variants %}
+        <!-- Variants Modal -->
+        <div class="modal fade" id="variantsModal{{ product.id }}" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">{{ product.name }} - Variants</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Size</th>
+                                        <th>Color</th>
+                                        <th>Stock</th>
+                                        <th>Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for variant in product.variants.all %}
+                                    <tr>
+                                        <td>{{ variant.get_size_display }}</td>
+                                        <td>{{ variant.get_color_display }}</td>
+                                        <td>{{ variant.stock }}</td>
+                                        <td>${{ variant.get_final_price|floatformat:2 }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                No products found. Try adjusting your search criteria.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 
