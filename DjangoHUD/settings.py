@@ -73,7 +73,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'DjangoHUDApp.utils.context_processors.sidebar_menu'
+                'DjangoHUDApp.utils.context_processors.sidebar_menu',
+                'django.template.context_processors.media',
             ],
         },
     },
@@ -134,13 +135,15 @@ USE_TZ = True
 
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'DjangoHUDApp/static'),
 ]
+
+# Media files (for uploaded images)
+MEDIA_URL = '/uploads/'  # Different from STATIC_URL
+MEDIA_ROOT = os.path.join(BASE_DIR, 'DjangoHUDApp/static/img/product')  # Store in static directory
 
 # WhiteNoise configuration
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'

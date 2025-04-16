@@ -1,0 +1,46 @@
+Database Sync Steps
+==================
+
+1. Backup Local Database (Safety First)
+-------------------------------------
+python manage.py dumpdata > local_backup.json
+
+2. Get Data from Production (Railway)
+-----------------------------------
+- Go to Railway dashboard
+- Find your PostgreSQL database
+- Click "Connect" to get connection string
+- Run this command (replace DATABASE_URL with your Railway URL):
+python manage.py dumpdata --exclude auth.permission --exclude contenttypes > production_data.json
+
+3. Load Production Data to Local
+------------------------------
+python manage.py loaddata production_data.json
+
+4. Verify the Sync
+----------------
+- Check your local admin interface
+- Verify users and data are present
+- Test functionality
+
+Important Notes:
+---------------
+- Always backup before syncing
+- The --exclude flags prevent permission conflicts
+- Make sure your local migrations are up to date
+- Test thoroughly after syncing
+
+Troubleshooting:
+--------------
+If you get permission errors:
+1. Clear your local database:
+   python manage.py flush
+
+2. Then try loading the data again:
+   python manage.py loaddata production_data.json
+
+Remember:
+---------
+- Keep your local_backup.json safe
+- Don't share production data files
+- Test in a development environment first 

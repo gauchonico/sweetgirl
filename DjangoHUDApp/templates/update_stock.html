@@ -1,1 +1,62 @@
- 
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Update Stock - {{ product.name }}</h3>
+                    <div class="card-actions">
+                        <a href="{% url 'DjangoHUDApp:product_details' product.id %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Product
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-4">
+                                <div class="card-body">
+                                    <h5>Current Stock Information</h5>
+                                    <div class="mb-3">
+                                        <strong>Current Stock:</strong>
+                                        <span class="badge {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ product.stock }}
+                                        </span>
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Last Updated:</strong>
+                                        <span>{{ product.updated_at|date:"F j, Y, g:i a" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <form method="post">
+                                {% csrf_token %}
+                                {% for field in form %}
+                                <div class="mb-3">
+                                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.help_text %}
+                                    <div class="form-text">{{ field.help_text }}</div>
+                                    {% endif %}
+                                    {% if field.errors %}
+                                    <div class="alert alert-danger">
+                                        {{ field.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                                <button type="submit" class="btn btn-primary">Update Stock</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

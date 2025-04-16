@@ -1,21 +1,44 @@
 {% extends 'base.html' %}
+{% load humanize %}
+{% load static %}
 
 {% block content %}
 <div class="container-fluid">
+    <!-- Toast Notification -->
+    {% if messages %}
+    <div class="position-fixed bottom-0 end-0 p-3">
+        {% for message in messages %}
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-autohide="false">
+            <div class="toast-header">
+                <i class="far fa-bell text-muted me-2"></i>
+                <strong class="me-auto">Notification</strong>
+                <small>Just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                {{ message }}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Products</h3>
-                    <div class="card-actions">
+                    <h3 class="card-title">Product List</h3>
+                    {% if user.is_authenticated and user.is_staff %}
+                    <div class="card-tools">
                         <a href="{% url 'DjangoHUDApp:product_management' %}" class="btn btn-primary">
                             <i class="fas fa-plus"></i> Add Product
                         </a>
                     </div>
+                    {% endif %}
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
-                        <table class="table table-hover">
+                        <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
                                     <th>Image</th>
@@ -31,26 +54,39 @@
                                 <tr>
                                     <td>
                                         {% if product.image %}
-                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-thumbnail" style="width: 50px; height: 50px; object-fit: cover;">
+                                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-thumbnail" style="max-width: 50px; max-height: 50px; object-fit: cover;">
                                         {% else %}
-                                        <div class="bg-light rounded" style="width: 50px; height: 50px;"></div>
+                                        <img src="{% static 'img/product/product-1.jpg' %}" alt="No image" class="img-thumbnail" style="max-width: 50px; max-height: 50px; object-fit: cover;">
                                         {% endif %}
                                     </td>
                                     <td>{{ product.name }}</td>
-                                    <td>{{ product.category|default:"-" }}</td>
-                                    <td>${{ product.price }}</td>
+                                    <td>{{ product.category.name }}</td>
+                                    <td>{{ product.price|floatformat|intcomma }}</td>
                                     <td>
-                                        <span class="badge {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                                            {{ product.stock }}
-                                        </span>
+                                        {% if product.has_variants %}
+                                            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#variantsModal{{ product.id }}">
+                                                View Variants
+                                            </button>
+                                        {% else %}
+                                            {% if product.store.quantity > 0 %}
+                                                <span class="badge bg-success">In Stock ({{ product.store.quantity }})</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Out of Stock</span>
+                                            {% endif %}
+                                        {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{% url 'DjangoHUDApp:product_details' product.id %}" class="btn btn-sm btn-info">
+                                        <a href="{% url 'DjangoHUDApp:product_details' product.id %}" class="btn btn-info btn-sm">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        <a href="{% url 'DjangoHUDApp:update_stock' product.id %}" class="btn btn-sm btn-warning">
-                                            <i class="fas fa-boxes"></i>
+                                        {% if user.is_authenticated and user.is_staff %}
+                                        <a href="{% url 'DjangoHUDApp:product_edit' product.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-edit"></i>
                                         </a>
+                                        <a href="{% url 'DjangoHUDApp:product_delete' product.id %}" class="btn btn-danger btn-sm">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}
@@ -66,4 +102,61 @@
         </div>
     </div>
 </div>
+
+<!-- Variants Modal -->
+{% for product in products %}
+{% if product.has_variants %}
+<div class="modal fade" id="variantsModal{{ product.id }}" tabindex="-1" aria-labelledby="variantsModalLabel{{ product.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="variantsModalLabel{{ product.id }}">{{ product.name }} - Variants</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Size</th>
+                                <th>Color</th>
+                                <th>Stock</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for variant in product.variants.all %}
+                            <tr>
+                                <td>{{ variant.get_size_display }}</td>
+                                <td>{{ variant.get_color_display }}</td>
+                                <td>
+                                    {% if variant.stock > 0 %}
+                                        <span class="badge bg-success">In Stock ({{ variant.stock }})</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Out of Stock</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ variant.get_final_price|floatformat|intcomma }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+{% block outter_content %}
+<script>
+    $(document).ready(function() {
+        $('.toast').toast('show');
+    });
+</script>
+{% endblock %}
 {% endblock %} 

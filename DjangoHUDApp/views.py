@@ -12,8 +12,9 @@ from django.db import connection
 from django.contrib.auth.decorators import login_required
 import csv
 from django.core.files.storage import default_storage
+from .forms import ProductForm, BulkProductUploadForm, StockUpdateForm
 
-from DjangoHUDApp.models import Customer, Product, Sale, SaleItem, Store
+from DjangoHUDApp.models import Customer, Product, Sale, SaleItem, Store, Category, ProductVariant
 
 def index(request):
     context = {
@@ -398,56 +399,57 @@ def test_static(request):
     return render(request, 'test_static.html', context)
 
 @login_required
-def product_management(request):
+def product_management(request, product_id=None):
+    if product_id:
+        product = get_object_or_404(Product, id=product_id)
+    else:
+        product = None
+
     if request.method == 'POST':
-        if 'csv_file' in request.FILES:
-            # Handle bulk upload
-            csv_file = request.FILES['csv_file']
-            if not csv_file.name.endswith('.csv'):
-                messages.error(request, 'Please upload a CSV file')
-                return redirect('DjangoHUDApp:product_management')
-            
-            try:
-                # Read the CSV file
-                csv_data = csv.reader(csv_file.read().decode('utf-8').splitlines())
-                headers = next(csv_data)
-                
-                # Process each row
-                for row in csv_data:
-                    if len(row) >= 3:  # At least name, price, and stock
-                        Product.objects.create(
-                            name=row[0],
-                            price=float(row[1]),
-                            stock=int(row[2]),
-                            description=row[3] if len(row) > 3 else '',
-                            category=row[4] if len(row) > 4 else ''
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.has_variants = request.POST.get('has_variants') == 'on'
+            product.save()
+
+            if product.has_variants:
+                # Delete existing variants if any
+                if product_id:
+                    ProductVariant.objects.filter(product=product).delete()
+
+                # Get variant data from form
+                sizes = request.POST.getlist('variant_size[]')
+                colors = request.POST.getlist('variant_color[]')
+                stocks = request.POST.getlist('variant_stock[]')
+                prices = request.POST.getlist('variant_price[]')
+
+                # Create new variants
+                for size, color, stock, price in zip(sizes, colors, stocks, prices):
+                    if size and color:  # Only create if both size and color are provided
+                        ProductVariant.objects.create(
+                            product=product,
+                            size=size,
+                            color=color,
+                            stock=int(stock),
+                            price_adjustment=float(price)
                         )
-                
-                messages.success(request, 'Products uploaded successfully!')
-            except Exception as e:
-                messages.error(request, f'Error processing CSV file: {str(e)}')
-        else:
-            # Handle single product
-            try:
-                product = Product.objects.create(
-                    name=request.POST.get('name'),
-                    description=request.POST.get('description'),
-                    price=float(request.POST.get('price')),
-                    stock=int(request.POST.get('stock')),
-                    category=request.POST.get('category')
-                )
-                
-                if 'image' in request.FILES:
-                    image = request.FILES['image']
-                    product.image.save(image.name, image, save=True)
-                
-                messages.success(request, 'Product added successfully!')
-            except Exception as e:
-                messages.error(request, f'Error adding product: {str(e)}')
-        
-        return redirect('DjangoHUDApp:product_management')
-    
-    return render(request, 'product_management.html')
+            else:
+                # If no variants, update the store quantity
+                store, created = Store.objects.get_or_create(product=product)
+                store.quantity = int(request.POST.get('stock', 0))
+                store.save()
+
+            messages.success(request, f'Product "{product.name}" saved successfully!')
+            return redirect('DjangoHUDApp:product_list')
+    else:
+        form = ProductForm(instance=product)
+
+    context = {
+        'form': form,
+        'product': product,
+        'categories': Category.objects.all(),
+    }
+    return render(request, 'product_management.html', context)
 
 @login_required
 def download_template(request):
@@ -481,26 +483,61 @@ def product_details(request, product_id):
 @login_required
 def update_stock(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    form = StockUpdateForm()
     
     if request.method == 'POST':
-        try:
-            stock_change = int(request.POST.get('stock_change', 0))
-            operation = request.POST.get('operation', 'add')
-            notes = request.POST.get('notes', '')
-            
-            if operation == 'add':
-                product.stock += stock_change
-            else:
-                product.stock = max(0, product.stock - stock_change)
-            
-            product.save()
-            messages.success(request, f'Stock updated successfully! New stock: {product.stock}')
-            return redirect('DjangoHUDApp:product_details', product_id=product.id)
-        except Exception as e:
-            messages.error(request, f'Error updating stock: {str(e)}')
+        form = StockUpdateForm(request.POST)
+        if form.is_valid():
+            try:
+                quantity = form.cleaned_data['quantity']
+                operation = form.cleaned_data['operation']
+                notes = form.cleaned_data['notes']
+                
+                if operation == 'add':
+                    product.stock += quantity
+                else:
+                    product.stock = max(0, product.stock - quantity)
+                
+                product.save()
+                messages.success(request, f'Stock updated successfully! New stock: {product.stock}')
+                return redirect('DjangoHUDApp:product_details', product_id=product.id)
+            except Exception as e:
+                messages.error(request, f'Error updating stock: {str(e)}')
     
     context = {
         'product': product,
+        'form': form,
         'title': f'Update Stock - {product.name}'
     }
     return render(request, 'update_stock.html', context)
+
+@login_required
+def product_edit(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    categories = Category.objects.all()
+    
+    if request.method == 'POST':
+        form = ProductForm(request.POST, request.FILES, instance=product)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Product "{product.name}" updated successfully!')
+            return redirect('DjangoHUDApp:product_list')
+    else:
+        form = ProductForm(instance=product)
+    
+    context = {
+        'form': form,
+        'product': product,
+        'categories': categories,
+    }
+    return render(request, 'product_edit.html', context)
+
+@login_required
+def product_delete(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.method == 'POST':
+        product_name = product.name
+        product.delete()
+        messages.success(request, f'Product "{product_name}" deleted successfully!')
+        return redirect('DjangoHUDApp:product_list')
+    return render(request, 'product_confirm_delete.html', {'product': product})

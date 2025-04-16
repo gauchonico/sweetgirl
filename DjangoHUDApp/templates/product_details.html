@@ -3,56 +3,70 @@
 {% load static %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container mt-4">
     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Product Details</h3>
-                    <div class="card-actions">
-                        <a href="{% url 'DjangoHUDApp:product_list' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Products
-                        </a>
+        <div class="col-md-6">
+            {% if product.image %}
+            <img src="{{ product.image.url }}" class="img-fluid rounded" alt="{{ product.name }}">
+            {% else %}
+            <img src="{% static 'images/default-product.png' %}" class="img-fluid rounded" alt="Default Product Image">
+            {% endif %}
+        </div>
+        <div class="col-md-6">
+            <h2>{{ product.name }}</h2>
+            <p class="text-muted">{{ product.category.name }}</p>
+            <p>{{ product.description }}</p>
+            
+            {% if product.has_variants %}
+                <div class="variants-section">
+                    <h4>Available Variants</h4>
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Size</th>
+                                    <th>Color</th>
+                                    <th>Stock</th>
+                                    <th>Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for variant in product.variants.all %}
+                                <tr>
+                                    <td>{{ variant.get_size_display }}</td>
+                                    <td>{{ variant.get_color_display }}</td>
+                                    <td>
+                                        {% if variant.stock > 0 %}
+                                            <span class="badge bg-success">In Stock ({{ variant.stock }})</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Out of Stock</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>${{ variant.get_final_price|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            {% if product.image %}
-                            <img src="{{ product.image.url }}" alt="{{ product.name }}" class="img-fluid rounded">
-                            {% else %}
-                            <div class="bg-light rounded" style="height: 300px; display: flex; align-items: center; justify-content: center;">
-                                <i class="fas fa-image fa-3x text-muted"></i>
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-8">
-                            <h2>{{ product.name }}</h2>
-                            <div class="mb-4">
-                                <span class="badge bg-primary">{{ product.category|default:"Uncategorized" }}</span>
-                                <span class="badge {% if product.stock > 10 %}bg-success{% elif product.stock > 0 %}bg-warning{% else %}bg-danger{% endif %}">
-                                    Stock: {{ product.stock }}
-                                </span>
-                            </div>
-                            <div class="mb-4">
-                                <h4 class="text-primary">${{ product.price }}</h4>
-                            </div>
-                            <div class="mb-4">
-                                <h5>Description</h5>
-                                <p>{{ product.description|default:"No description available" }}</p>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <a href="{% url 'DjangoHUDApp:update_stock' product.id %}" class="btn btn-warning">
-                                    <i class="fas fa-boxes"></i> Update Stock
-                                </a>
-                                <a href="{% url 'DjangoHUDApp:product_management' %}" class="btn btn-primary">
-                                    <i class="fas fa-edit"></i> Edit Product
-                                </a>
-                            </div>
-                        </div>
+            {% else %}
+                <div class="price-section">
+                    <h3 class="mb-3">${{ product.price|floatformat:2 }}</h3>
+                    <div class="stock-status mb-3">
+                        {% if product.store.quantity > 0 %}
+                            <span class="badge bg-success">In Stock ({{ product.store.quantity }})</span>
+                        {% else %}
+                            <span class="badge bg-danger">Out of Stock</span>
+                        {% endif %}
                     </div>
                 </div>
+            {% endif %}
+            
+            {% if user.is_authenticated and user.is_staff %}
+            <div class="mt-4">
+                <a href="{% url 'DjangoHUDApp:product_edit' product.id %}" class="btn btn-primary">Edit Product</a>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>

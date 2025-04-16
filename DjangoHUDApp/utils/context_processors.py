@@ -26,26 +26,7 @@ def sidebar_menu(request):
 		'icon': 'bi bi-bar-chart',
 		'text': 'Analytics',
 		'name': 'analytics'
-	}, {
-		'icon': 'bi bi-envelope',
-		'text': 'Email',
-		'children': [{
-			'url': '/email/inbox',
-			'action': 'Inbox',
-			'text': 'Inbox',
-			'name': 'emailInbox'
-		}, {
-			'url': '/email/compose',
-			'action': 'Compose',
-			'text': 'Compose',
-			'name': 'emailCompose'
-		}, {
-			'url': '/email/detail',
-			'action': 'Detail',
-			'text': 'Detail',
-			'name': 'emailDetail'
-		}]
-	}, {
+	},{
 		'is_divider': 1
 	}, {
 		'text': 'Components',
@@ -60,7 +41,7 @@ def sidebar_menu(request):
 		'text': 'Products Management',
 		'children': [{
 			'url': '/products/',
-			'text': 'Product Corner',
+			'text': 'Add Product',
 			'name': 'product_management'
 		}, {
 			'url': '/products/list/',
