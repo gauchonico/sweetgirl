@@ -13,7 +13,8 @@
 	
 	<!-- BEGIN mobile-toggler -->
 	<div class="mobile-toggler">
-		<button type="button" class="menu-toggler" data-toggle="sidebar-mobile">
+		<button type="button" class="menu-toggler" data-toggle="sidebar-mobile" data-bs-toggle="collapse" data-bs-target="#sidebar" data-toggle-class="app-sidebar-mobile-toggled" data-toggle-target=".app">
+			<span class="bar"></span>
 			<span class="bar"></span>
 			<span class="bar"></span>
 		</button>
@@ -61,11 +62,6 @@
 	
 	<!-- BEGIN menu -->
 	<div class="menu">
-		<div class="menu-item dropdown">
-			<a href="#" data-toggle-class="app-header-menu-search-toggled" data-toggle-target=".app" class="menu-link">
-				<div class="menu-icon"><i class="bi bi-search nav-icon"></i></div>
-			</a>
-		</div>
 		<div class="menu-item dropdown dropdown-mobile-full">
 			<a href="#" data-bs-toggle="dropdown" data-bs-display="static" class="menu-link">
 				<div class="menu-icon"><i class="bi bi-grid-3x3-gap nav-icon"></i></div>
@@ -216,9 +212,9 @@
 					</form>
 				</div>
 			{% else %}
-				<a href="{% url 'DjangoHUDApp:pageLogin' %}" class="menu-link">
-					<div class="menu-text d-sm-block d-none w-170px">
-						<button class="btn btn-warning btn-sm">LOGIN</button>
+				<a href="{% url 'DjangoHUDApp:pageLogin' %}" class="menu-link ms-auto">
+					<div class="menu-text d-flex justify-content-end">
+						<button class="btn btn-theme btn-sm">LOGIN</button>
 					</div>
 				</a>
 			{% endif %}

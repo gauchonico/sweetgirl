@@ -155,14 +155,14 @@ $border-color-translucent-dark:                 rgba($white, .25) !default;
 
 // 05. Component settings
 
-$component-bg-dark:                             #28292b !default;
+$component-bg-dark:                             #351d32 !default;
 $component-color-dark:                          $body-color-dark !default;
 
 
 
 // 06. App - Header settings
 
-$app-header-bg-dark:                            rgba(29, 40, 53, .95) !default;
+$app-header-bg-dark:                            linear-gradient(90deg, rgba(53, 29, 50, 0.9) 0%, rgba(21, 3, 20, 0.9) 100%) !default;
 $app-header-brand-img-dark:                     url('images/logo-dark.png') !default;
 $app-header-link-color-dark:                    $white !default;
 $app-header-link-hover-color-dark:              rgba($white, .5) !default;
@@ -176,7 +176,7 @@ $app-sidebar-menu-header-color-dark:            rgba(var(--#{$prefix}inverse-rgb
 $app-sidebar-menu-link-color-dark:              rgba(var(--#{$prefix}inverse-rgb), .5) !default;
 $app-sidebar-menu-link-hover-color-dark:        $white !default;
 $app-sidebar-menu-link-active-color-dark:       $white !default;
-$app-sidebar-mobile-bg-dark:                    rgba(44, 56, 70, .98) !default;
+$app-sidebar-mobile-bg-dark:                    linear-gradient(90deg, rgba(53, 29, 50, 0.9) 0%, rgba(21, 3, 20, 0.9) 100%) !default;
 
 
 
